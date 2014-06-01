@@ -1,4 +1,6 @@
 <?php
+use Luracast\Restler\RestException;
+
 class SubSchedules {
 
 	public $dp;
@@ -31,8 +33,25 @@ class SubSchedules {
     *
     */
     function post($schedule_id, $request_data = NULL) {
-    	//echo $request_data;
         return $this->dp->insert($schedule_id, $this->_validate($request_data));
+    }
+
+    /**
+    *
+    * @url PUT schedules/{schedule_id}/sub_schedules/{id}
+    *
+    */
+    function put($schedule_id, $id, $request_data = NULL) {
+        return $this->dp->update($schedule_id, $id, $this->_validate($request_data));
+    }
+
+    /**
+    *
+    * @url DELETE schedules/{schedule_id}/sub_schedules/{id}
+    *
+    */
+    function delete($schedule_id, $id) {
+        return $this->dp->delete($schedule_id, $id);
     }
 
     private function _validate($data) {

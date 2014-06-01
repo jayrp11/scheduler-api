@@ -70,18 +70,25 @@ class DB_PDO_SubSchedules
         return $this->get($this->db->lastInsertId());
     }
 
-    function update($id, $rec)
+    function update($schedule_id, $id, $rec)
     {
-        $sql = $this->db->prepare("UPDATE schedules SET theme = :theme, s_date = :occurs_on WHERE id = :id");
-        if (!$sql->execute(array(':id' => $id, ':theme' => $rec['theme'], ':occurs_on' => $rec['occurs_on'])))
+        $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = :start_time, end_time = :end_time, presenter = :presenter, lead = :lead");
+        if (!$sql->execute(array(
+                ':schedule_id'        => $schedule_id, 
+                ':title'            => $rec['title'],
+                ':start_time'    => $rec['start_time'],
+                ':end_time'    => $rec['end_time'],
+                ':presenter'    => $rec['presenter'],
+                ':lead'    => $rec['lead'],
+                )))
             return FALSE;
         return $this->get($id);
     }
 
-    function delete($id)
+    function delete($schedule_id, $id)
     {
         $r = $this->get($id);
-        if (!$r || !$this->db->prepare('DELETE FROM schedules WHERE id = ?')->execute(array($id)))
+        if (!$r || !$this->db->prepare('DELETE FROM sub_schedules WHERE id = ?')->execute(array($id)))
             return FALSE;
         return $r;
     }
