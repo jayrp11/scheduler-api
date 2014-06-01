@@ -56,16 +56,16 @@ class DB_PDO_Schedules
 
     function insert($rec)
     {
-        $sql = $this->db->prepare("INSERT INTO schedules (theme, s_date) VALUES (:theme, :occurs_on)");
-        if (!$sql->execute(array(':theme' => $rec['theme'], ':occurs_on' => $rec['occurs_on'])))
+        $sql = $this->db->prepare("INSERT INTO schedules (theme, s_date) VALUES (:theme, :s_date)");
+        if (!$sql->execute(array(':theme' => $rec['theme'], ':s_date' => $rec['s_date'])))
             return FALSE;
         return $this->get($this->db->lastInsertId());
     }
 
     function update($id, $rec)
     {
-        $sql = $this->db->prepare("UPDATE schedules SET theme = :theme, s_date = :occurs_on WHERE id = :id");
-        if (!$sql->execute(array(':id' => $id, ':theme' => $rec['theme'], ':occurs_on' => $rec['occurs_on'])))
+        $sql = $this->db->prepare("UPDATE schedules SET theme = :theme, s_date = :s_date WHERE id = :id");
+        if (!$sql->execute(array(':id' => $id, ':theme' => $rec['theme'], ':s_date' => $rec['s_date'])))
             return FALSE;
         return $this->get($id);
     }
