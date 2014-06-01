@@ -26,10 +26,12 @@ class SubSchedules {
     }
 
     /**
-	*
-	* @url POST schedules/{schedule_id}/sub_schedules/
-	*/
+    *
+    * @url POST schedules/{schedule_id}/sub_schedules
+    *
+    */
     function post($schedule_id, $request_data = NULL) {
+    	//echo $request_data;
         return $this->dp->insert($schedule_id, $this->_validate($request_data));
     }
 
@@ -37,11 +39,10 @@ class SubSchedules {
         $reso = array();
         foreach (SubSchedules::$FIELDS as $field) {
 //you may also validate the data here
-            if (!isset($data[$field])) 
+            if (!isset($data[$field]))
                 throw new RestException(400, "$field field missing");
             $reso[$field] = $data[$field];
         }
         return $reso;
     }
-
 }
