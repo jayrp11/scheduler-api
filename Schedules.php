@@ -5,7 +5,7 @@ class Schedules {
 
 	public $dp;
 
-	static $FIELDS = array('theme', 'occurs_on');
+	static $FIELDS = array('theme', 's_date');
 
 	function __construct() {
 		$this->dp = new DB_PDO_Schedules();

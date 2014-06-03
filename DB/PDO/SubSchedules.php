@@ -72,8 +72,9 @@ class DB_PDO_SubSchedules
 
     function update($schedule_id, $id, $rec)
     {
-        $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = :start_time, end_time = :end_time, presenter = :presenter, lead = :lead");
+        $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = :start_time, end_time = :end_time, presenter = :presenter, lead = :lead where id = :id");
         if (!$sql->execute(array(
+                ':id'               => $id,
                 ':schedule_id'        => $schedule_id, 
                 ':title'            => $rec['title'],
                 ':start_time'    => $rec['start_time'],
