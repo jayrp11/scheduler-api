@@ -37,7 +37,10 @@ class DB_PDO_SubSchedules
         try {
             $sql = $this->db->prepare('SELECT * FROM sub_schedules WHERE id = :id');
             $sql->execute(array(':id' => $id));
-            return $this->id2int($sql->fetch());
+            $s = $this->id2int($sql->fetch());
+            $r = $this->getResources($id);
+            $s['resources'] = $r;
+            return $s;
         } catch (PDOException $e) {
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
@@ -67,7 +70,9 @@ class DB_PDO_SubSchedules
                 ':lead'    => $rec['lead'],
                 )))
             return FALSE;
-        return $this->get($this->db->lastInsertId());
+        $id = $this->db->lastInsertId();
+        $this->saveOrUpdateResources($id, $rec['resources']);
+        return $this->get($id);
     }
 
     function update($schedule_id, $id, $rec)
@@ -83,6 +88,7 @@ class DB_PDO_SubSchedules
                 ':lead'    => $rec['lead'],
                 )))
             return FALSE;
+        $this->saveOrUpdateResources($id, $rec['resources']);
         return $this->get($id);
     }
 
@@ -107,5 +113,47 @@ class DB_PDO_SubSchedules
         }
         return $r;
     }
+
+    private function getResources($sub_schedule_id) {
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+            $sql = $this->db->prepare('SELECT resource_id as id FROM sub_schedules_resources WHERE sub_schedule_id = :sub_schedule_id');
+            $sql->execute(array(':sub_schedule_id' => $sub_schedule_id));
+
+            $r = array();
+            foreach ($this->id2int($sql->fetchAll()) as &$r0) {
+                array_push($r, $r0['id']);
+            }
+
+            return $r;
+        } catch (PDOException $e) {
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }        
+    }
+
+    private function saveOrUpdateResources($sub_schedule_id, $resources) {
+        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+            // TODO: below must be corrected
+            $this->db->prepare('DELETE FROM sub_schedules_resources WHERE sub_schedule_id = ?')->execute(array($sub_schedule_id));
+
+            if (is_array($resources)) {
+                foreach ($resources as &$r0) {
+                    error_log($r0, 3, "/tmp/php_error.log");
+                    $sql = $this->db->prepare("INSERT INTO sub_schedules_resources (sub_schedule_id, resource_id) VALUES (:sub_schedule_id, :resource_id)");
+                    if (!$sql->execute(array(
+                        ':sub_schedule_id'        => $sub_schedule_id, 
+                        ':resource_id'            => $r0
+                        )))
+                        error_log('FALSE', 3, "/tmp/php_error.log");
+                      //return FALSE;        
+                }
+            }
+
+        } catch (PDOException $e) {
+            throw new RestException(501, 'MySQL: ' . $e->getMessage());
+        }
+    }
 }
 
+    

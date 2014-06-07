@@ -5,7 +5,7 @@ class SubSchedules {
 
 	public $dp;
 
-	static $FIELDS = array('title', 'start_time', 'end_time', 'presenter', 'lead');
+	static $FIELDS = array('title', 'start_time', 'end_time', 'presenter', 'lead', 'resources');
 
 	function __construct() {
 		$this->dp = new DB_PDO_SubSchedules();
