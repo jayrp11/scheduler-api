@@ -23,10 +23,11 @@ class DB_PDO_Users extends DB_PDO_MySqlCRUD
 
             session_destroy();
             session_start();
+            $_SESSION = array();
             $_SESSION['user'] = 'test';
-            session_write_close();
+            // session_write_close();
 
-            error_log(session_status().'  Users Session Status < ', 3, "/tmp/php_error.log");
+            error_log(session_status()."  Users Session Status \r\n ", 3, "/tmp/php_error.log");
 
             $sql = $this->getDb()->prepare('SELECT username FROM users WHERE username = :username');
             $row = $sql->fetch(PDO::FETCH_ASSOC);

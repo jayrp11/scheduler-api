@@ -11,6 +11,15 @@ class Auth {
 		$this->dp = new DB_PDO_Users();
 	}
 
+    /**
+     *
+     * @url GET auth/test
+     */
+    function get() {
+        error_log(session_status()."  auth/test \r\n", 3, "/tmp/php_error.log");
+        return 'test';
+    }
+
 	/**
 	 *
 	 * @url POST auth/validate
