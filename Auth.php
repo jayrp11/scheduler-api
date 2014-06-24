@@ -1,37 +1,45 @@
 <?php
-use Luracast\Restler\RestException;
+use Luracast\Restler\iAuthenticate;
 
-class Auth {
+class Auth implements iAuthenticate
+{
+    public $dp;
 
-	public $dp;
+    static $FIELDS = array('username', 'password');
 
-	static $FIELDS = array('username', 'password');
-
-	function __construct() {
-		$this->dp = new DB_PDO_Users();
-	}
-
-    /**
-     *
-     * @url GET auth/test
-     */
-    function get() {
-        error_log(session_status()."  auth/test \r\n", 3, "/tmp/php_error.log");
-        return 'test';
+    function __construct() {
+        $this->dp = new DB_PDO_Users();
     }
 
-	/**
-	 *
-	 * @url POST auth/validate
-	 */
-	function post($request_data = NULL) {
-        return $this->dp->validate($request_data);
+    public function __getWWWAuthenticateString() {
+        return 'Query name="session_id"';
+    }
+
+    function __isAllowed()
+    {
+        session_start();
+        $user = $_SESSION['user'];
+        return !(!isset($user) || trim($user)==='');
+    }
+
+    public function postLogin($request_data = NULL) {
+        $user = $this->dp->validate($request_data);
+
+        session_start();
+        $_SESSION = array();
+        $_SESSION['user'] = $user['username'];
+
+        return $user;
+    }
+
+    public function postLogout() {
+        session_start();
+        session_destroy();
     }
 
     private function _validate($data) {
         $reso = array();
         foreach (SubSchedules::$FIELDS as $field) {
-//you may also validate the data here
             if (!isset($data[$field]))
                 throw new RestException(400, "$field field missing");
             $reso[$field] = $data[$field];
