@@ -27,14 +27,19 @@ class Auth implements iAuthenticate
 
         session_start();
         $_SESSION = array();
-        $_SESSION['user'] = $user['username'];
+        $_SESSION['user'] = $user;
 
         return $user;
     }
 
-    public function postLogout() {
+    public function getLogout() {
         session_start();
         session_destroy();
+    }
+
+    public function getCurrentUser() {
+        session_start();
+        return $_SESSION['user'] ?  $_SESSION['user'] : '';
     }
 
     private function _validate($data) {
