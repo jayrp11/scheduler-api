@@ -39,7 +39,7 @@ class Auth implements iAuthenticate
 
     public function getCurrentUser() {
         session_start();
-        return $_SESSION['user'] ?  $_SESSION['user'] : NULL;
+        return isset($_SESSION['user']) ?  $_SESSION['user'] : NULL;
     }
 
     private function _validate($data) {
