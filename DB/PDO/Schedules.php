@@ -110,7 +110,7 @@ class DB_PDO_Schedules
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = $this->db->prepare('SELECT * FROM sub_schedules WHERE schedule_id = :schedule_id');
+            $sql = $this->db->prepare("SELECT id, schedule_id, date_format(start_time, '%h:%i %p') as start_time, date_format(end_time, '%h:%i %p') as end_time, title, presenter, lead FROM sub_schedules WHERE schedule_id = :schedule_id");
             $sql->execute(array(':schedule_id' => $schedule_id));
             return $this->id2int($sql->fetchAll());
         } catch (PDOException $e) {

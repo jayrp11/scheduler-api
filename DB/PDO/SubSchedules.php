@@ -6,6 +6,8 @@ class DB_PDO_SubSchedules
 {
     private $db;
 
+    private $time_pattern = '/^(0?[1-9]|1[012])[:\\-\s]([0-5]*\d)([:\\-\s]([APap][mM]))?$/';
+
     function __construct()
     {
         try {
@@ -35,7 +37,7 @@ class DB_PDO_SubSchedules
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = $this->db->prepare('SELECT * FROM sub_schedules WHERE id = :id');
+            $sql = $this->db->prepare("SELECT id, schedule_id, date_format(start_time, '%h:%i %p') as start_time, date_format(end_time, '%h:%i %p') as end_time, title, presenter, lead FROM sub_schedules WHERE id = :id");
             $sql->execute(array(':id' => $id));
             $s = $this->id2int($sql->fetch());
             $r = $this->getResources($id);
@@ -50,7 +52,7 @@ class DB_PDO_SubSchedules
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = $this->db->prepare('SELECT * FROM sub_schedules WHERE schedule_id = :schedule_id');
+            $sql = $this->db->prepare("SELECT id, schedule_id, date_format(start_time, '%h:%i %p') as start_time, date_format(end_time, '%h:%i %p') as end_time, title, presenter, lead FROM sub_schedules WHERE schedule_id = :schedule_id");
             $sql->execute(array(':schedule_id' => $schedule_id));
             return $this->id2int($sql->fetchAll());
         } catch (PDOException $e) {
@@ -58,9 +60,23 @@ class DB_PDO_SubSchedules
         }
     }
 
+    function format_time($time) {
+        error_log($time ."  time \r\n ", 3, "/tmp/php_error.log");
+        if(preg_match($this->time_pattern, trim($time), $matches)) {
+            return $matches[1].':'.$matches[2].' '.(isset($matches[4])?$matches[4]:'PM');
+        } else {
+            throw new RestException(400, 'Format does not match for : ' . $time);
+        }
+    }
+
     function insert($schedule_id, $rec)
     {
-        $sql = $this->db->prepare("INSERT INTO sub_schedules (schedule_id, title, start_time, end_time, presenter, lead) VALUES (:schedule_id, :title, :start_time, :end_time, :presenter, :lead)");
+
+        $rec['start_time'] = $this->format_time($rec['start_time']);
+        $rec['end_time'] = $this->format_time($rec['end_time']);
+        error_log($rec['start_time'] ."  start time \r\n ", 3, "/tmp/php_error.log");
+
+        $sql = $this->db->prepare("INSERT INTO sub_schedules (schedule_id, title, start_time, end_time, presenter, lead) VALUES (:schedule_id, :title, str_to_date(:start_time, '%h:%i %p'), str_to_date(:end_time, '%h:%i %p'), :presenter, :lead)");
         if (!$sql->execute(array(
                 ':schedule_id'        => $schedule_id, 
                 ':title'            => $rec['title'],
@@ -77,7 +93,10 @@ class DB_PDO_SubSchedules
 
     function update($schedule_id, $id, $rec)
     {
-        $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = :start_time, end_time = :end_time, presenter = :presenter, lead = :lead where id = :id");
+        $rec['start_time'] = $this->format_time($rec['start_time']);
+        $rec['end_time'] = $this->format_time($rec['end_time']);
+
+        $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = str_to_date(:start_time, '%h:%i %p'), end_time = str_to_date(:end_time, '%h:%i %p'), presenter = :presenter, lead = :lead where id = :id");
         if (!$sql->execute(array(
                 ':id'               => $id,
                 ':schedule_id'        => $schedule_id, 

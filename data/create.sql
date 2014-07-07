@@ -18,8 +18,8 @@ create table resources (
 create table sub_schedules (
   id int not null auto_increment primary key,
   schedule_id int not null,
-  start_time timestamp not null,
-  end_time timestamp not null,
+  start_time time not null,
+  end_time time not null,
   title varchar(50),
   presenter varchar(50),
   lead varchar(50), /* this should be replaced by foreign key */
