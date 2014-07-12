@@ -48,13 +48,26 @@ class DB_PDO_SubSchedules
         }
     }
 
+    private function loadResources($s)
+    {
+        if (is_array($s)) {
+            foreach ($s as &$s0) {
+                $r = $this->getResources($s0['id']);
+                $s0['resources'] = $r;
+            }
+        }
+        return $s;
+    }
+
     function getAll($schedule_id)
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
             $sql = $this->db->prepare("SELECT id, schedule_id, date_format(start_time, '%h:%i %p') as start_time, date_format(end_time, '%h:%i %p') as end_time, title, presenter, lead FROM sub_schedules WHERE schedule_id = :schedule_id order by start_time asc");
             $sql->execute(array(':schedule_id' => $schedule_id));
-            return $this->id2int($sql->fetchAll());
+            $s = $this->id2int($sql->fetchAll());
+            $s = $this->loadResources($s);
+            return $s;
         } catch (PDOException $e) {
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
@@ -168,14 +181,10 @@ class DB_PDO_SubSchedules
     private function getResources($sub_schedule_id) {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = $this->db->prepare('SELECT resource_id as id FROM sub_schedules_resources WHERE sub_schedule_id = :sub_schedule_id');
+            $sql = $this->db->prepare('SELECT resource_id as id, name FROM sub_schedules_resources sr join resources r on sr.resource_id=r.id WHERE sub_schedule_id = :sub_schedule_id');
             $sql->execute(array(':sub_schedule_id' => $sub_schedule_id));
 
-            $r = array();
-            foreach ($this->id2int($sql->fetchAll()) as &$r0) {
-                array_push($r, $r0['id']);
-            }
-
+            $r = $this->id2int($sql->fetchAll());
             return $r;
         } catch (PDOException $e) {
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
