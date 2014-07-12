@@ -103,9 +103,10 @@ class Routes
             if (!isset($metadata['param'])) {
                 $metadata['param'] = array();
             }
-            if (isset($metadata['return']['type']) && $qualified = Scope::resolve($metadata['return']['type'], $scope)) {
-                list($metadata['return']['type'], $metadata['return']['children']) =
-                    static::getTypeAndModel(new ReflectionClass($qualified), $scope);
+            if (isset($metadata['return']['type'])) {
+                if ($qualified = Scope::resolve($metadata['return']['type'], $scope))
+                    list($metadata['return']['type'], $metadata['return']['children']) =
+                        static::getTypeAndModel(new ReflectionClass($qualified), $scope);
             } else {
                 //assume return type is array
                 $metadata['return']['type'] = 'array';
@@ -124,20 +125,20 @@ class Routes
                 $m ['name'] = $param->getName();
                 if (empty($m['label']))
                     $m['label'] = static::label($m['name']);
-                if ($m['name'] == 'email' && empty($m[CommentParser::$embeddedDataName]['type']))
-                    $m[CommentParser::$embeddedDataName]['type'] = 'email';
-                $m ['default'] = $defaults [$position];
-                $m ['required'] = !$param->isOptional();
                 if (is_null($type) && isset($m['type'])) {
                     $type = $m['type'];
                 }
+                if ($m['name'] == 'email' && empty($m[CommentParser::$embeddedDataName]['type']) && $type == 'string')
+                    $m[CommentParser::$embeddedDataName]['type'] = 'email';
+                $m ['default'] = $defaults [$position];
+                $m ['required'] = !$param->isOptional();
                 $contentType = Util::nestedValue(
                     $m,
                     CommentParser::$embeddedDataName,
                     'type'
                 );
                 if ($contentType && $qualified = Scope::resolve($contentType, $scope)) {
-                    list($contentType, $children) = static::getTypeAndModel(
+                    list($m[CommentParser::$embeddedDataName]['type'], $children) = static::getTypeAndModel(
                         new ReflectionClass($qualified), $scope
                     );
                 }
@@ -596,7 +597,7 @@ class Routes
             }
             throw $e;
         }
-        static::$models[$className] = array($class->getName(), $children);
+        static::$models[$className] = array($className, $children);
         return static::$models[$className];
     }
 

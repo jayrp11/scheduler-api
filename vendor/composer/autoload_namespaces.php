@@ -6,5 +6,5 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Luracast\\Restler' => array($vendorDir),
+    'Luracast\\Restler' => array($vendorDir . '/restler/framework'),
 );

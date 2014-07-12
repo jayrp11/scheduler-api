@@ -1,0 +1,6 @@
+{
+	"name":"scheduler-api",
+	"require": {
+		"restler/framework":"3.0.0"
+	}
+}
