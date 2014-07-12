@@ -1,5 +1,6 @@
 <?php
 use Luracast\Restler\RestException;
+use Valitron\Validator;
 
 /**
  *
@@ -7,9 +8,14 @@ use Luracast\Restler\RestException;
  */
 class Schedules {
 
-	public $dp;
-
-	static $FIELDS = array('theme', 's_date');
+	private $dp;
+	
+    private $rules = [
+        'required' => [ 
+            ['theme'],
+            ['s_date']
+        ]
+    ];
 
 	function __construct() {
 		$this->dp = new DB_PDO_Schedules();
@@ -24,25 +30,28 @@ class Schedules {
 	}
 
 	function post($request_data = NULL) {
-		return $this->dp->insert($this->_validate($request_data));
+        $v = new Validator($request_data);
+        $v->rules($this->rules);
+
+        if($v->validate()) {
+        	return $this->dp->insert($request_data);
+        }
+
+        return $v->errors();
 	}
 
 	function put($id, $request_data = NULL) {
-        return $this->dp->update($id, $this->_validate($request_data));
+		$v = new Validator($request_data);
+        $v->rules($this->rules);
+
+        if($v->validate()) {
+        	return $this->dp->update($id, $request_data);
+        }
+
+        return $v->errors();
     }
 
     function delete($id) {
         return $this->dp->delete($id);
     }
-
-	private function _validate($data) {
-		$reso = array();
-		foreach (Schedules::$FIELDS as $field) {
-//you may also validate the data here
-			if (!isset($data[$field]))
-				throw new RestException(400, "$field field missing");
-			$reso[$field] = $data[$field];
-		}
-		return $reso;
-	}
 }

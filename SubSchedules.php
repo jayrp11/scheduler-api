@@ -1,11 +1,22 @@
 <?php
 use Luracast\Restler\RestException;
+use Valitron\Validator;
 
 class SubSchedules {
 
-	public $dp;
+	private $dp;
 
 	static $FIELDS = array('title', 'start_time', 'end_time', 'presenter', 'lead', 'resources');
+
+    private $rules = [
+        'required' => [ 
+            ['title'],
+            ['start_time'],
+            ['end_time'],
+            ['presenter'],
+            ['lead']
+        ]
+    ];
 
 	function __construct() {
 		$this->dp = new DB_PDO_SubSchedules();
@@ -33,7 +44,14 @@ class SubSchedules {
     *
     */
     function post($schedule_id, $request_data = NULL) {
-        return $this->dp->insert($schedule_id, $this->_validate($request_data));
+        $v = new Validator($request_data);
+        $v->rules($this->rules);
+
+        if($v->validate()) {
+            return $this->dp->insert($schedule_id, $request_data);
+        }
+
+        return $v->errors();
     }
 
     /**
@@ -42,7 +60,14 @@ class SubSchedules {
     *
     */
     function put($schedule_id, $id, $request_data = NULL) {
-        return $this->dp->update($schedule_id, $id, $this->_validate($request_data));
+        $v = new Validator($request_data);
+        $v->rules($this->rules);
+
+        if($v->validate()) {
+            return $this->dp->update($schedule_id, $id, $request_data);
+        }
+
+        return $v->errors();
     }
 
     /**
@@ -52,16 +77,5 @@ class SubSchedules {
     */
     function delete($schedule_id, $id) {
         return $this->dp->delete($schedule_id, $id);
-    }
-
-    private function _validate($data) {
-        $reso = array();
-        foreach (SubSchedules::$FIELDS as $field) {
-//you may also validate the data here
-            if (!isset($data[$field]))
-                throw new RestException(400, "$field field missing");
-            $reso[$field] = $data[$field];
-        }
-        return $reso;
     }
 }

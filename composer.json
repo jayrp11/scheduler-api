@@ -1,6 +1,7 @@
 {
 	"name":"scheduler-api",
 	"require": {
-		"restler/framework":"3.0.0"
+		"restler/framework":"3.0.0",
+		"vlucas/valitron":"1.1.7"
 	}
 }

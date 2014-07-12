@@ -1,11 +1,17 @@
 <?php
 use Luracast\Restler\iAuthenticate;
+use Valitron\Validator;
 
 class Auth implements iAuthenticate
 {
-    public $dp;
+    private $dp;
 
-    static $FIELDS = array('username', 'password');
+    private $rules = [
+        'required' => [ 
+            ['username'],
+            ['password']
+        ]
+    ];
 
     function __construct() {
         $this->dp = new DB_PDO_Users();
@@ -19,17 +25,24 @@ class Auth implements iAuthenticate
     {
         session_start();
         $user = $_SESSION['user'];
-        return !(!isset($user) || trim($user)==='');
+        return isset($user);
     }
 
     public function postLogin($request_data = NULL) {
-        $user = $this->dp->validate($request_data);
+        $v = new Validator($request_data);
+        $v->rules($this->rules);
 
-        session_start();
-        $_SESSION = array();
-        $_SESSION['user'] = $user;
+        if($v->validate()) {
+            $user = $this->dp->validate($request_data);
 
-        return $user;
+            session_start();
+            $_SESSION = array();
+            $_SESSION['user'] = $user;
+
+            return $user;
+        }
+
+        return $v->errors();
     }
 
     public function getLogout() {
@@ -40,15 +53,5 @@ class Auth implements iAuthenticate
     public function getCurrentUser() {
         session_start();
         return isset($_SESSION['user']) ?  $_SESSION['user'] : NULL;
-    }
-
-    private function _validate($data) {
-        $reso = array();
-        foreach (SubSchedules::$FIELDS as $field) {
-            if (!isset($data[$field]))
-                throw new RestException(400, "$field field missing");
-            $reso[$field] = $data[$field];
-        }
-        return $reso;
     }
 }
