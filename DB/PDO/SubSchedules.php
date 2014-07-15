@@ -73,22 +73,34 @@ class DB_PDO_SubSchedules
         }
     }
 
-    private function validate($rec) {
+    private function validate($schedule_id, $rec) {
         if(strtotime($rec['end_time']) <= strtotime($rec['start_time'])) {
             throw new RestException(400, 'End time is greater then or equal to Start time.');
         }
 
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = $this->db->prepare("select count(*) as count from sub_schedules where"
+            $sql_string = 
+                  "select count(*) as count from sub_schedules where"
+                . " schedule_id = :schedule_id"
+                . " and "
+                . " ( "
                 . " (str_to_date(:start_time, '%h:%i %p') > start_time and str_to_date(:end_time, '%h:%i %p') < end_time)"
                 . " or "
                 . " (str_to_date(:start_time, '%h:%i %p') < start_time and str_to_date(:end_time, '%h:%i %p') < end_time and str_to_date(:end_time, '%h:%i %p') > start_time)"
                 . " or "
                 . " (str_to_date(:start_time, '%h:%i %p') > start_time and str_to_date(:end_time, '%h:%i %p') > end_time and str_to_date(:start_time, '%h:%i %p') < end_time)"
                 . " or "
-                . "(str_to_date(:start_time, '%h:%i %p') < start_time and str_to_date(:end_time, '%h:%i %p') > end_time)");
-            $sql->execute(array(':start_time' => $rec['start_time'],
+                . "(str_to_date(:start_time, '%h:%i %p') < start_time and str_to_date(:end_time, '%h:%i %p') > end_time)"
+                . " or " 
+                . " str_to_date(:start_time, '%h:%i %p') = start_time"
+                . " or "
+                . " str_to_date(:end_time, '%h:%i %p') = end_time"
+                . " ) ";
+            error_log("$sql_string \r\n ", 3, "/tmp/php_error.log");    
+            $sql = $this->db->prepare($sql_string);
+            $sql->execute(array(':schedule_id' => $schedule_id,
+                ':start_time' => $rec['start_time'],
                 ':end_time' => $rec['end_time']));
             $row = $sql->fetch();
             error_log($row['count'] ."  count \r\n ", 3, "/tmp/php_error.log");    
@@ -115,7 +127,7 @@ class DB_PDO_SubSchedules
         $rec['end_time'] = $this->format_time($rec['end_time']);
         error_log($rec['start_time'] ."  start time \r\n ", 3, "/tmp/php_error.log");
 
-        $this->validate($rec);
+        $this->validate($schedule_id, $rec);
 
         $sql = $this->db->prepare("INSERT INTO sub_schedules (schedule_id, title, start_time, end_time, presenter, lead) VALUES (:schedule_id, :title, str_to_date(:start_time, '%h:%i %p'), str_to_date(:end_time, '%h:%i %p'), :presenter, :lead)");
         if (!$sql->execute(array(
@@ -139,7 +151,7 @@ class DB_PDO_SubSchedules
         error_log($rec['start_time'] ."  start time \r\n ", 3, "/tmp/php_error.log");
         error_log($rec['end_time'] ."  end time \r\n ", 3, "/tmp/php_error.log");
 
-        $this->validate($rec);
+        $this->validate($schedule_id, $rec);
 
         $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = str_to_date(:start_time, '%h:%i %p'), end_time = str_to_date(:end_time, '%h:%i %p'), presenter = :presenter, lead = :lead where id = :id");
         if (!$sql->execute(array(
