@@ -4,7 +4,7 @@ use Luracast\Restler\RestException;
 
 class DB_PDO_MySqlCRUD
 {
-    protected $db;
+    private $db;
 
     function __construct()
     {
