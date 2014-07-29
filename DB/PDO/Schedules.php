@@ -9,6 +9,7 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
     function __construct()
     {
         try {
+            parent::__construct();
             $this->sub_schedules = new DB_PDO_SubSchedules();
         } catch (PDOException $e) {
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
