@@ -46,7 +46,7 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
         }
     }
 
-    private function validate($schedule_id, $rec) {
+    private function validate($schedule_id, $rec, $is_update = false, $sub_schedule_id = null) {
         if(strtotime($rec['end_time']) <= strtotime($rec['start_time'])) {
             throw new RestException(400, 'End time is greater then or equal to Start time.');
         }
@@ -70,13 +70,25 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
                 . " or "
                 . " str_to_date(:end_time, '%h:%i %p') = end_time"
                 . " ) ";
-            error_log("$sql_string \r\n ", 3, "/tmp/php_error.log");    
-            $sql = $this->db->prepare($sql_string);
-            $sql->execute(array(':schedule_id' => $schedule_id,
+
+            $parm_array = array(':schedule_id' => $schedule_id,
                 ':start_time' => $rec['start_time'],
-                ':end_time' => $rec['end_time']));
+                ':end_time' => $rec['end_time']);
+
+            if($is_update) {
+                $sql_string = $sql_string . " and id <> :sub_schedule_id";
+                //array_push($parm_array, ":sub_schedule_id" => $sub_schedule_id);
+                $parm_array[":sub_schedule_id"] = $sub_schedule_id;
+            }
+
+            error_log("$sql_string \r\n ", 3, "/tmp/php_error.log");    
+            
+            $sql = $this->db->prepare($sql_string);
+            $sql->execute();
             $row = $sql->fetch();
+            
             error_log($row['count'] ."  count \r\n ", 3, "/tmp/php_error.log");    
+            
             if($row['count'] > 0) {
                 throw new RestException(400, 'Start time/End time overlap.');
             }
@@ -124,7 +136,7 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
         error_log($rec['start_time'] ."  start time \r\n ", 3, "/tmp/php_error.log");
         error_log($rec['end_time'] ."  end time \r\n ", 3, "/tmp/php_error.log");
 
-        $this->validate($schedule_id, $rec);
+        $this->validate($schedule_id, $rec, true, $id);
 
         $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = str_to_date(:start_time, '%h:%i %p'), end_time = str_to_date(:end_time, '%h:%i %p'), presenter = :presenter, lead = :lead where id = :id");
         if (!$sql->execute(array(
