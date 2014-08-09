@@ -141,13 +141,13 @@ class Restler extends EventDispatcher
      *
      * @var array
      */
-    protected $producedMimeTypes = array();
+    protected $writableMimeTypes = array();
     /**
      * List of the Mime Types that are supported for incoming requests by this API
      *
      * @var array
      */
-    protected $consumedMimeTypes = array();
+    protected $readableMimeTypes = array();
     /**
      * Associated array that maps formats to their respective format class name
      *
@@ -328,18 +328,18 @@ class Restler extends EventDispatcher
      * Returns a list of the mime types (e.g.  ["application/json","application/xml"]) that the API can respond with
      * @return array
      */
-    public function getProducedMimeTypes()
+    public function getWritableMimeTypes()
     {
-        return $this->producedMimeTypes;
+        return $this->writableMimeTypes;
     }
 
     /**
      * Returns the list of Mime Types for the request that the API can understand
      * @return array
      */
-    public function getConsumedMimeTypes()
+    public function getReadableMimeTypes()
     {
-        return $this->consumedMimeTypes;
+        return $this->readableMimeTypes;
     }
 
     /**
@@ -357,6 +357,7 @@ class Restler extends EventDispatcher
         $args = func_get_args();
         $extensions = array();
         $throwException = $this->requestFormatDiffered;
+        $this->writableMimeTypes = $this->readableMimeTypes = array();
         foreach ($args as $className) {
 
             $obj = Scope::get($className);
@@ -369,15 +370,16 @@ class Restler extends EventDispatcher
             }
 
             foreach ($obj->getMIMEMap() as $mime => $extension) {
-                if($obj->isWritable())
-                    $this->producedMimeTypes[]=$mime;
+                if($obj->isWritable()){
+                    $this->writableMimeTypes[]=$mime;
+                    $extensions[".$extension"] = true;
+                }
                 if($obj->isReadable())
-                    $this->consumedMimeTypes[]=$mime;
+                    $this->readableMimeTypes[]=$mime;
                 if (!isset($this->formatMap[$extension]))
                     $this->formatMap[$extension] = $className;
                 if (!isset($this->formatMap[$mime]))
                     $this->formatMap[$mime] = $className;
-                $extensions[".$extension"] = true;
             }
         }
         if ($throwException) {
@@ -417,7 +419,8 @@ class Restler extends EventDispatcher
                     $this->formatOverridesMap[$extension] = $className;
                 if (!isset($this->formatOverridesMap[$mime]))
                     $this->formatOverridesMap[$mime] = $className;
-                $extensions[".$extension"] = true;
+                if($obj->isWritable())
+                    $extensions[".$extension"] = true;
             }
         }
         $this->formatOverridesMap['extensions'] = array_keys($extensions);
@@ -430,25 +433,30 @@ class Restler extends EventDispatcher
      */
     protected function getPath()
     {
+        // fix SCRIPT_NAME for PHP 5.4 built-in web server
+        if (false === strpos($_SERVER['SCRIPT_NAME'], '.php'))
+            $_SERVER['SCRIPT_NAME']
+                = '/' . Util::removeCommonPath($_SERVER['SCRIPT_FILENAME'], $_SERVER['DOCUMENT_ROOT']);
+
         $fullPath = urldecode($_SERVER['REQUEST_URI']);
         $path = Util::removeCommonPath(
             $fullPath,
             $_SERVER['SCRIPT_NAME']
         );
-        $baseUrl = $_SERVER['SERVER_PORT'] == '443' ||
-        (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') || // Amazon ELB
-        (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://';
-        if ($_SERVER['SERVER_PORT'] != '80' && $_SERVER['SERVER_PORT'] != '443') {
-            $baseUrl .= $_SERVER['SERVER_NAME'] . ':'
-                . $_SERVER['SERVER_PORT'];
-        } else {
-            $baseUrl .= $_SERVER['SERVER_NAME'];
-        }
+        $port = isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : '80';
+        $https = $port == '443' ||
+            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') || // Amazon ELB
+            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on');
+
+        $baseUrl = ($https ? 'https://' : 'http://') . $_SERVER['SERVER_NAME'];
+
+        if (!$https && $port != '80' || $https && $port != '443')
+            $baseUrl .= ':' . $port;
 
         $this->baseUrl = rtrim($baseUrl
             . substr($fullPath, 0, strlen($fullPath) - strlen($path)), '/');
 
-        $path = preg_replace('/(\/*\?.*$)|(\/$)/', '', $path);
+        $path = rtrim(strtok($path, '?'), '/'); //remove query string and trailing slash if found any
         $path = str_replace(
             array_merge(
                 $this->formatMap['extensions'],
@@ -457,9 +465,7 @@ class Restler extends EventDispatcher
             '',
             $path
         );
-        if (Defaults::$useUrlBasedVersioning
-            && strlen($path) && $path{0} == 'v'
-        ) {
+        if (Defaults::$useUrlBasedVersioning && strlen($path) && $path{0} == 'v') {
             $version = intval(substr($path, 1));
             if ($version && $version <= $this->apiVersion) {
                 $this->requestedApiVersion = $version;
@@ -483,7 +489,13 @@ class Restler extends EventDispatcher
     {
         $format = null ;
         // check if client has sent any information on request format
-        if (!empty($_SERVER['CONTENT_TYPE'])) {
+        if (
+            !empty($_SERVER['CONTENT_TYPE']) ||
+            (
+                !empty($_SERVER['HTTP_CONTENT_TYPE']) &&
+                $_SERVER['CONTENT_TYPE'] = $_SERVER['HTTP_CONTENT_TYPE']
+            )
+        ) {
             $mime = $_SERVER['CONTENT_TYPE'];
             if (false !== $pos = strpos($mime, ';')) {
                 $mime = substr($mime, 0, $pos);
@@ -515,9 +527,12 @@ class Restler extends EventDispatcher
 
     public function getRequestStream()
     {
-        $rawInput = fopen('php://input', 'r');
-        $tempStream = fopen('php://temp', 'r+');
-        stream_copy_to_stream($rawInput, $tempStream);
+        static $tempStream = false;
+        if (!$tempStream) {
+            $tempStream = fopen('php://temp', 'r+');
+            $rawInput = fopen('php://input', 'r');
+            stream_copy_to_stream($rawInput, $tempStream);
+        }
         rewind($tempStream);
         return $tempStream;
     }
@@ -1063,10 +1078,14 @@ class Restler extends EventDispatcher
                 usleep(1e6 * (Defaults::$throttle / 1e3 - $elapsed));
             }
         }
+        if ($this->responseCode == 401) {
+            $authString = count($this->authClasses)
+                ? Scope::get($this->authClasses[0])->__getWWWAuthenticateString()
+                : 'Unknown';
+            @header('WWW-Authenticate: ' . $authString, false);
+        }
         echo $this->responseData;
         $this->dispatch('complete');
-        if ($this->responseCode == 401)
-            @header('WWW-Authenticate: ' . (@$this->authClasses[0]->__getWWWAuthenticateString() ? : 'Custom'), false);
         exit;
     }
 

@@ -25,6 +25,98 @@ class Validator implements iValidate
     public static $exceptions = array();
 
     /**
+     * Validate alphabetic characters.
+     *
+     * Check that given value contains only alphabetic characters.
+     *
+     * @param                $input
+     * @param ValidationInfo $info
+     *
+     * @return string
+     *
+     * @throws Invalid
+     */
+    public static function alpha($input, ValidationInfo $info = null)
+    {
+        if (ctype_alpha($input)) {
+            return $input;
+        }
+        if ($info && $info->fix) {
+            //remove non alpha characters
+            return preg_replace("/[^a-z]/i", "", $input);
+        }
+        throw new Invalid('Expecting only alphabetic characters.');
+    }
+
+    /**
+     * Validate alpha numeric characters.
+     *
+     * Check that given value contains only alpha numeric characters.
+     *
+     * @param                $input
+     * @param ValidationInfo $info
+     *
+     * @return string
+     *
+     * @throws Invalid
+     */
+    public static function alphanumeric($input, ValidationInfo $info = null)
+    {
+        if (ctype_alnum($input)) {
+            return $input;
+        }
+        if ($info && $info->fix) {
+            //remove non alpha numeric and space characters
+            return preg_replace("/[^a-z0-9 ]/i", "", $input);
+        }
+        throw new Invalid('Expecting only alpha numeric characters.');
+    }
+
+    /**
+     * Validate printable characters.
+     *
+     * Check that given value contains only printable characters.
+     *
+     * @param                $input
+     * @param ValidationInfo $info
+     *
+     * @return string
+     *
+     * @throws Invalid
+     */
+    public static function printable($input, ValidationInfo $info = null)
+    {
+        if (ctype_print($input)) {
+            return $input;
+        }
+        if ($info && $info->fix) {
+            //remove non printable characters
+            return preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $input);
+        }
+        throw new Invalid('Expecting only printable characters.');
+    }
+
+    /**
+     * Validate hexadecimal digits.
+     *
+     * Check that given value contains only hexadecimal digits.
+     *
+     * @param                $input
+     * @param ValidationInfo $info
+     *
+     * @return string
+     *
+     * @throws Invalid
+     */
+    public static function hex($input, ValidationInfo $info = null)
+    {
+        if (ctype_xdigit($input)) {
+            return $input;
+        }
+        throw new Invalid('Expecting only hexadecimal digits.');
+    }
+
+    /**
      * Validate Telephone number
      *
      * Check if the given value is numeric with or without a `+` prefix
@@ -61,8 +153,54 @@ class Validator implements iValidate
         $r = filter_var($input, FILTER_VALIDATE_EMAIL);
         if ($r) {
             return $r;
+        } elseif ($info && $info->fix) {
+            $r = filter_var($input, FILTER_SANITIZE_EMAIL);
+            return static::email($r);
         }
         throw new Invalid('Expecting email in `name@example.com` format');
+    }
+
+    /**
+     * Validate IP Address
+     *
+     * Check if the given string is a valid ip address
+     *
+     * @param String         $input
+     * @param ValidationInfo $info
+     *
+     * @return string
+     * @throws Invalid
+     */
+    public static function ip($input, ValidationInfo $info = null)
+    {
+        $r = filter_var($input, FILTER_VALIDATE_IP);
+        if ($r)
+            return $r;
+
+        throw new Invalid('Expecting IP address in IPV6 or IPV4 format');
+    }
+
+    /**
+     * Validate Url
+     *
+     * Check if the given string is a valid url
+     *
+     * @param String         $input
+     * @param ValidationInfo $info
+     *
+     * @return string
+     * @throws Invalid
+     */
+    public static function url($input, ValidationInfo $info = null)
+    {
+        $r = filter_var($input, FILTER_VALIDATE_URL);
+        if ($r) {
+            return $r;
+        } elseif ($info && $info->fix) {
+            $r = filter_var($input, FILTER_SANITIZE_URL);
+            return static::url($r);
+        }
+        throw new Invalid('Expecting url in `http://example.com` format');
     }
 
     /**
@@ -336,7 +474,7 @@ class Validator implements iValidate
                         $error .= '. Expecting alpha numeric value';
                         break;
                     }
-                    if ($info->required && empty($input) && $input != 0) {
+                    if ($info->required && $input === '') {
                         $error = "$name is required.";
                         break;
                     }

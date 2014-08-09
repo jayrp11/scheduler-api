@@ -1,6 +1,10 @@
 <?php
 use Luracast\Restler\RestException;
 
+/**
+ *
+ * @access protected
+ */
 class Assets {
 
 	public $dp;

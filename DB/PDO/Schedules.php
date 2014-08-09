@@ -2,30 +2,15 @@
 
 use Luracast\Restler\RestException;
 
-class DB_PDO_Schedules
+class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
 {
-    private $db;
+    private $sub_schedules;
 
     function __construct()
     {
         try {
-            //Make sure you are using UTF-8
-            $options = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8');
-
-            //Update the dbname username and password to suit your server
-            $this->db = new PDO(
-                'mysql:host=localhost;dbname=scheduler',
-                'root',
-                'root',
-                $options
-            );
-            $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE,
-                PDO::FETCH_ASSOC);
-
-            //If you are using older version of PHP and having issues with Unicode
-            //uncomment the following line
-            //$this->db->exec("SET NAMES utf8");
-
+            parent::__construct();
+            $this->sub_schedules = new DB_PDO_SubSchedules();
         } catch (PDOException $e) {
             throw new RestException(501, 'MySQL: ' . $e->getMessage());
         }
@@ -96,26 +81,14 @@ class DB_PDO_Schedules
     {
         if (is_array($r)) {
             if (isset($r['id'])) {
-                $r['sub_schedules'] = $this->getSubSchedules($r['id']);
+                $r['sub_schedules'] = $this->sub_schedules->getAll($r['id']);
             } else {
                 foreach ($r as &$r0) {
-                    $r0['sub_schedules'] = $this->getSubSchedules($r0['id']);
+                    $r0['sub_schedules'] = $this->sub_schedules->getAll($r0['id']);
                 }
             }
         }
         return $r;
-    }
-
-    function getSubSchedules($schedule_id)
-    {
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        try {
-            $sql = $this->db->prepare('SELECT * FROM sub_schedules WHERE schedule_id = :schedule_id');
-            $sql->execute(array(':schedule_id' => $schedule_id));
-            return $this->id2int($sql->fetchAll());
-        } catch (PDOException $e) {
-            throw new RestException(501, 'MySQL: ' . $e->getMessage());
-        }
     }
 }
 

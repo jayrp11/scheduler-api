@@ -180,8 +180,8 @@ class CommentParser
         }
         $description = implode(' ', $description);
         $longDescription = implode(' ', $longDescription);
-        $description = preg_replace('/\s+/ms', ' ', $description);
-        $longDescription = preg_replace('/\s+/ms', ' ', $longDescription);
+        $description = preg_replace('/\s+/msu', ' ', $description);
+        $longDescription = preg_replace('/\s+/msu', ' ', $longDescription);
         list($description, $d1)
             = $this->parseEmbeddedData($description);
         list($longDescription, $d2)
@@ -195,7 +195,7 @@ class CommentParser
             list(, $param, $value) = preg_split('/\@|\s/', $line, 3)
             + array('', '', '');
             list($value, $embedded) = $this->parseEmbeddedData($value);
-            $value = array_filter(preg_split('/\s+/ms', $value));
+            $value = array_filter(preg_split('/\s+/msu', $value));
             $this->parseParam($param, $value, $embedded);
         }
         return $this->_data;
@@ -238,13 +238,11 @@ class CommentParser
                 $value = $this->formatThrows($value);
                 $allowMultiple = true;
                 break;
-            case 'header' :
-                $allowMultiple = true;
-                break;
             case 'author':
                 $value = $this->formatAuthor($value);
                 $allowMultiple = true;
                 break;
+            case 'header' :
             case 'link':
             case 'example':
             case 'todo':
@@ -363,7 +361,7 @@ class CommentParser
                                     $d[$key] = $val;
                                 } else {
                                     $d[$key] =
-                                        preg_replace('/\s+/ms', ' ',
+                                        preg_replace('/\s+/msu', ' ',
                                             $d[$key]);
                                 }
                             }
