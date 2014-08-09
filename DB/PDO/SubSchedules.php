@@ -77,14 +77,13 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
 
             if($is_update) {
                 $sql_string = $sql_string . " and id <> :sub_schedule_id";
-                //array_push($parm_array, ":sub_schedule_id" => $sub_schedule_id);
                 $parm_array[":sub_schedule_id"] = $sub_schedule_id;
             }
 
             error_log("$sql_string \r\n ", 3, "/tmp/php_error.log");    
             
             $sql = $this->db->prepare($sql_string);
-            $sql->execute();
+            $sql->execute($parm_array);
             $row = $sql->fetch();
             
             error_log($row['count'] ."  count \r\n ", 3, "/tmp/php_error.log");    
