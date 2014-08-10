@@ -17,3 +17,10 @@ insert into resources(type, name) values('MUSIC', 'Guitar');
 
 insert into resources(type, name) values('HALL', 'Main Podium');
 insert into resources(type, name) values('HALL', 'Vyaspith');
+
+insert into events(type) values('Ravi Sabha');
+
+insert into orgs(name) values('Sydney - Main Sabha');
+
+insert into users(org_id, username, firstname, lastname, password, authlevel) values(1, "admin", "Admin - Firstname", "Admin - Lastname", "02726d40f378e716981c4321d60ba3a325ed6a4c",0);	
+insert into users(org_id, username, firstname, lastname, password, authlevel) values(1, "user", "User - Firstname", "User - Lastname", "5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8", 0);

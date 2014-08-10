@@ -2,11 +2,19 @@ create database scheduler;
 
 use scheduler;
 
+create table events (
+  id int not null auto_increment primary key,
+  type varchar(20) not null
+);
+
 create table schedules (
   id int not null auto_increment primary key,
+  event_id int not null default 1,
   s_date date not null,
   theme varchar(50) not null,
-  is_template boolean not null default false
+  is_template boolean not null default false,
+
+  CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE  
 );
 
 create table resources (
@@ -35,9 +43,19 @@ create table sub_schedules_resources (
   CONSTRAINT fk_resource FOREIGN KEY (resource_id) REFERENCES resources(id)
 );
 
+create table orgs (
+  id int not null auto_increment primary key,
+  name varchar(50) not null
+);
+
 create table users (
   id int not null auto_increment primary key,
+  org_id int not null,
   username varchar(50) not null,
   password varchar(100) not null,
-  type int not null
+  firstname varchar(100) not null,
+  lastname varchar(100) not null,
+  authlevel int not null,
+
+  CONSTRAINT fk_org FOREIGN KEY (org_id) REFERENCES orgs(id)
 );
