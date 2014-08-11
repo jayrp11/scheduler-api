@@ -28,9 +28,10 @@ create table sub_schedules (
   schedule_id int not null,
   start_time time not null,
   end_time time not null,
-  title varchar(50),
+  title varchar(50) not null,
+  notes varchar(200),
   presenter varchar(50),
-  lead varchar(50), /* this should be replaced by foreign key */
+  lead varchar(50),
 
   CONSTRAINT fk_schedule FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE ON UPDATE CASCADE
 );

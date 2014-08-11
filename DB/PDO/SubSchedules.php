@@ -10,7 +10,7 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = $this->db->prepare("SELECT id, schedule_id, date_format(start_time, '%h:%i %p') as start_time, date_format(end_time, '%h:%i %p') as end_time, title, presenter, lead FROM sub_schedules WHERE id = :id");
+            $sql = $this->db->prepare("SELECT id, schedule_id, date_format(start_time, '%h:%i %p') as start_time, date_format(end_time, '%h:%i %p') as end_time, title, notes, presenter, lead FROM sub_schedules WHERE id = :id");
             $sql->execute(array(':id' => $id));
             $s = $this->id2int($sql->fetch());
             $r = $this->getResources($id);
@@ -36,7 +36,7 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $sql = $this->db->prepare("SELECT id, schedule_id, date_format(start_time, '%h:%i %p') as start_time, date_format(end_time, '%h:%i %p') as end_time, title, presenter, lead FROM sub_schedules WHERE schedule_id = :schedule_id order by start_time asc");
+            $sql = $this->db->prepare("SELECT id, schedule_id, date_format(start_time, '%h:%i %p') as start_time, date_format(end_time, '%h:%i %p') as end_time, title, notes, presenter, lead FROM sub_schedules WHERE schedule_id = :schedule_id order by start_time asc");
             $sql->execute(array(':schedule_id' => $schedule_id));
             $s = $this->id2int($sql->fetchAll());
             $s = $this->loadResources($s);
@@ -113,12 +113,13 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
 
         $this->validate($schedule_id, $rec);
 
-        $sql = $this->db->prepare("INSERT INTO sub_schedules (schedule_id, title, start_time, end_time, presenter, lead) VALUES (:schedule_id, :title, str_to_date(:start_time, '%h:%i %p'), str_to_date(:end_time, '%h:%i %p'), :presenter, :lead)");
+        $sql = $this->db->prepare("INSERT INTO sub_schedules (schedule_id, title, start_time, end_time, notes, presenter, lead) VALUES (:schedule_id, :title, str_to_date(:start_time, '%h:%i %p'), str_to_date(:end_time, '%h:%i %p'), :notes, :presenter, :lead)");
         if (!$sql->execute(array(
                 ':schedule_id'        => $schedule_id, 
                 ':title'            => $rec['title'],
                 ':start_time'    => $rec['start_time'],
                 ':end_time'    => $rec['end_time'],
+                ':notes'    => $rec['notes'],
                 ':presenter'    => $rec['presenter'],
                 ':lead'    => $rec['lead'],
                 )))
@@ -137,13 +138,14 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
 
         $this->validate($schedule_id, $rec, true, $id);
 
-        $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = str_to_date(:start_time, '%h:%i %p'), end_time = str_to_date(:end_time, '%h:%i %p'), presenter = :presenter, lead = :lead where id = :id");
+        $sql = $this->db->prepare("UPDATE sub_schedules set schedule_id = :schedule_id, title = :title, start_time = str_to_date(:start_time, '%h:%i %p'), end_time = str_to_date(:end_time, '%h:%i %p'), notes = :notes, presenter = :presenter, lead = :lead where id = :id");
         if (!$sql->execute(array(
                 ':id'               => $id,
                 ':schedule_id'        => $schedule_id, 
                 ':title'            => $rec['title'],
                 ':start_time'    => $rec['start_time'],
                 ':end_time'    => $rec['end_time'],
+                ':notes'    => $rec['notes'],
                 ':presenter'    => $rec['presenter'],
                 ':lead'    => $rec['lead'],
                 )))
