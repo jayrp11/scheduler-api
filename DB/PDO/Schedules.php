@@ -28,11 +28,20 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
         }
     }
 
-    function getAll()
+    function getAll($condition)
     {
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         try {
-            $stmt = $this->db->query('SELECT * FROM schedules');
+            $stmtStr = 'SELECT * FROM schedules';
+            switch($condition) {
+                case 'UPCOMING':
+                    $stmtStr = $stmtStr . ' where s_date > curdate()';
+                    break;
+                case 'PAST':
+                    $stmtStr = $stmtStr . ' where s_date < curdate()';
+                    break;
+            }
+            $stmt = $this->db->query($stmtStr);
             return $this->id2int($stmt->fetchAll());
         } catch (PDOException $e) {
             throw new RestException(501, 'MySQL: ' . $e->getMessage());

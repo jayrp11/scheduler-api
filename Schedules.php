@@ -1,5 +1,4 @@
 <?php
-use Luracast\Restler\RestException;
 use Valitron\Validator;
 
 /**
@@ -53,5 +52,13 @@ class Schedules {
 
     function delete($id) {
         return $this->dp->delete($id);
+    }
+
+    function getUpcoming() {
+        return $this->dp->getAll('UPCOMING');
+    }
+
+    function getPast() {
+        return $this->dp->getAll('PAST');
     }
 }
