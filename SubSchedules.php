@@ -44,6 +44,10 @@ class SubSchedules {
     *
     */
     function post($schedule_id, $request_data = NULL) {
+        if($_SESSION['user']['authlevel'] > 51) {
+            throw new RestException(401, 'Not authorized');
+        }
+
         $v = new Validator($request_data);
         $v->rules($this->rules);
 
@@ -60,6 +64,10 @@ class SubSchedules {
     *
     */
     function put($schedule_id, $id, $request_data = NULL) {
+        if($_SESSION['user']['authlevel'] > 51) {
+            throw new RestException(401, 'Not authorized');
+        }
+
         $v = new Validator($request_data);
         $v->rules($this->rules);
 
@@ -76,6 +84,10 @@ class SubSchedules {
     *
     */
     function delete($schedule_id, $id) {
+        if($_SESSION['user']['authlevel'] > 51) {
+            throw new RestException(401, 'Not authorized');
+        }
+        
         return $this->dp->delete($schedule_id, $id);
     }
 }

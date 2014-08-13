@@ -1,5 +1,6 @@
 <?php
 use Valitron\Validator;
+use Luracast\Restler\RestException;
 
 /**
  *
@@ -29,6 +30,10 @@ class Schedules {
 	}
 
 	function post($request_data = NULL) {
+        if($_SESSION['user']['authlevel'] > 51) {
+            throw new RestException(401, 'Not authorized');
+        }
+
         $v = new Validator($request_data);
         $v->rules($this->rules);
 
@@ -40,6 +45,10 @@ class Schedules {
 	}
 
 	function put($id, $request_data = NULL) {
+        if($_SESSION['user']['authlevel'] > 51) {
+            throw new RestException(401, 'Not authorized');
+        }
+
 		$v = new Validator($request_data);
         $v->rules($this->rules);
 
@@ -51,6 +60,10 @@ class Schedules {
     }
 
     function delete($id) {
+        if($_SESSION['user']['authlevel'] > 51) {
+            throw new RestException(401, 'Not authorized');
+        }
+        
         return $this->dp->delete($id);
     }
 

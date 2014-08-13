@@ -22,6 +22,10 @@ class Users {
 	}
 
 	function post($request_data = NULL) {
+		if($_SESSION['user']['authlevel'] > 1) {
+            throw new RestException(401, 'Not authorized');
+        }
+
 		$v = new Validator($request_data);
 		$v->rules($this->rules);
 
