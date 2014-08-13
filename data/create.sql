@@ -12,7 +12,7 @@ create table schedules (
   event_id int not null default 1,
   s_date date not null,
   theme varchar(50) not null,
-  is_template boolean not null default false,
+  locked boolean not null default false,
 
   CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE  
 );

@@ -48,6 +48,13 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
         }
     }
 
+    function lock($id, $rec) {
+        $sql = $this->db->prepare("UPDATE schedules SET locked = 1 WHERE id = :id");
+        if (!$sql->execute(array(':id' => $id)))
+            return FALSE;
+        return $this->get($id);
+    }
+
     function insert($rec)
     {
         $sql = $this->db->prepare("INSERT INTO schedules (theme, s_date) VALUES (:theme, :s_date)");
