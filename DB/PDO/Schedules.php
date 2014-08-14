@@ -72,6 +72,12 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
 
     function update($id, $rec)
     {
+        $sql = $this->db->prepare("select locked from schedules where id = :id");
+        $sql->execute(array(':id' => $id));
+        $retval = $sql->fetch()['locked'];
+        if($retval)
+            throw new RestException(401, 'Not authorized');
+
         $sql = $this->db->prepare("UPDATE schedules SET theme = :theme, s_date = :s_date WHERE id = :id");
         if (!$sql->execute(array(':id' => $id, ':theme' => $rec['theme'], ':s_date' => $rec['s_date'])))
             return FALSE;
