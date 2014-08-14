@@ -82,4 +82,12 @@ class Schedules {
 
         return $this->dp->lock($id, $request_data);
     }
+
+    function postUnlock($id, $request_data = null) {
+        if($_SESSION['user']['authlevel'] > 10) {
+            throw new RestException(401, 'Not authorized');
+        }
+
+        return $this->dp->unlock($id, $request_data);
+    }
 }
