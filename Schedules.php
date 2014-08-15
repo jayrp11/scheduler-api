@@ -30,7 +30,7 @@ class Schedules {
 	}
 
 	function post($request_data = NULL) {
-        if($_SESSION['user']['authlevel'] > 51) {
+        if($_SESSION['user']['authlevel'] > 50) {
             throw new RestException(401, 'Not authorized');
         }
 
@@ -45,7 +45,7 @@ class Schedules {
 	}
 
 	function put($id, $request_data = NULL) {
-        if($_SESSION['user']['authlevel'] > 51) {
+        if($_SESSION['user']['authlevel'] > 50) {
             throw new RestException(401, 'Not authorized');
         }
 
@@ -60,10 +60,10 @@ class Schedules {
     }
 
     function delete($id) {
-        if($_SESSION['user']['authlevel'] > 51) {
+        if($_SESSION['user']['authlevel'] > 50) {
             throw new RestException(401, 'Not authorized');
         }
-        
+
         return $this->dp->delete($id);
     }
 
@@ -73,5 +73,21 @@ class Schedules {
 
     function getPast() {
         return $this->dp->getAll('PAST');
+    }
+
+    function postLock($id, $request_data = null) {
+        if($_SESSION['user']['authlevel'] > 50) {
+            throw new RestException(401, 'Not authorized');
+        }
+
+        return $this->dp->lock($id, $request_data);
+    }
+
+    function postUnlock($id, $request_data = null) {
+        if($_SESSION['user']['authlevel'] > 10) {
+            throw new RestException(401, 'Not authorized');
+        }
+
+        return $this->dp->unlock($id, $request_data);
     }
 }

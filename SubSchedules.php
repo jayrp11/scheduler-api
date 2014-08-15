@@ -44,7 +44,7 @@ class SubSchedules {
     *
     */
     function post($schedule_id, $request_data = NULL) {
-        if($_SESSION['user']['authlevel'] > 51) {
+        if($_SESSION['user']['authlevel'] > 50) {
             throw new RestException(401, 'Not authorized');
         }
 
@@ -64,7 +64,7 @@ class SubSchedules {
     *
     */
     function put($schedule_id, $id, $request_data = NULL) {
-        if($_SESSION['user']['authlevel'] > 51) {
+        if($_SESSION['user']['authlevel'] > 50) {
             throw new RestException(401, 'Not authorized');
         }
 
@@ -84,7 +84,7 @@ class SubSchedules {
     *
     */
     function delete($schedule_id, $id) {
-        if($_SESSION['user']['authlevel'] > 51) {
+        if($_SESSION['user']['authlevel'] > 50) {
             throw new RestException(401, 'Not authorized');
         }
         

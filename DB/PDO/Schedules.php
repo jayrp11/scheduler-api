@@ -35,7 +35,7 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
             $stmtStr = 'SELECT * FROM schedules';
             switch($condition) {
                 case 'UPCOMING':
-                    $stmtStr = $stmtStr . ' where s_date > curdate()';
+                    $stmtStr = $stmtStr . ' where s_date >= curdate()';
                     break;
                 case 'PAST':
                     $stmtStr = $stmtStr . ' where s_date < curdate()';
@@ -48,6 +48,20 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
         }
     }
 
+    function lock($id, $rec) {
+        $sql = $this->db->prepare("UPDATE schedules SET locked = 1 WHERE id = :id");
+        if (!$sql->execute(array(':id' => $id)))
+            return FALSE;
+        return $this->get($id);
+    }
+
+    function unlock($id, $rec) {
+        $sql = $this->db->prepare("UPDATE schedules SET locked = 0 WHERE id = :id");
+        if (!$sql->execute(array(':id' => $id)))
+            return FALSE;
+        return $this->get($id);
+    }
+
     function insert($rec)
     {
         $sql = $this->db->prepare("INSERT INTO schedules (theme, s_date) VALUES (:theme, :s_date)");
@@ -58,6 +72,12 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
 
     function update($id, $rec)
     {
+        $sql = $this->db->prepare("select locked from schedules where id = :id");
+        $sql->execute(array(':id' => $id));
+        $retval = $sql->fetch()['locked'];
+        if($retval)
+            throw new RestException(401, 'Not authorized');
+
         $sql = $this->db->prepare("UPDATE schedules SET theme = :theme, s_date = :s_date WHERE id = :id");
         if (!$sql->execute(array(':id' => $id, ':theme' => $rec['theme'], ':s_date' => $rec['s_date'])))
             return FALSE;
