@@ -35,7 +35,7 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
             $stmtStr = 'SELECT * FROM schedules';
             switch($condition) {
                 case 'UPCOMING':
-                    $stmtStr = $stmtStr . ' where s_date > curdate()';
+                    $stmtStr = $stmtStr . ' where s_date >= curdate()';
                     break;
                 case 'PAST':
                     $stmtStr = $stmtStr . ' where s_date < curdate()';
