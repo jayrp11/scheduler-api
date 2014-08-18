@@ -80,13 +80,13 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
                 $parm_array[":sub_schedule_id"] = $sub_schedule_id;
             }
 
-            error_log("$sql_string \r\n ", 3, "/tmp/php_error.log");    
+            //error_log("$sql_string \r\n ", 3, "/tmp/php_error.log");    
             
             $sql = $this->db->prepare($sql_string);
             $sql->execute($parm_array);
             $row = $sql->fetch();
             
-            error_log($row['count'] ."  count \r\n ", 3, "/tmp/php_error.log");    
+            //error_log($row['count'] ."  count \r\n ", 3, "/tmp/php_error.log");    
             
             if($row['count'] > 0) {
                 throw new RestException(400, 'Start time/End time overlap.');
@@ -97,7 +97,7 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
     }
 
     function format_time($time) {
-        error_log($time ."  time \r\n ", 3, "/tmp/php_error.log");
+        //error_log($time ."  time \r\n ", 3, "/tmp/php_error.log");
         if(preg_match($this->time_pattern, trim($time), $matches)) {
             return $matches[1].':'.$matches[2].' '.(isset($matches[4])?$matches[4]:'PM');
         } else {
@@ -109,7 +109,7 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
     {
         $rec['start_time'] = $this->format_time($rec['start_time']);
         $rec['end_time'] = $this->format_time($rec['end_time']);
-        error_log($rec['start_time'] ."  start time \r\n ", 3, "/tmp/php_error.log");
+        //error_log($rec['start_time'] ."  start time \r\n ", 3, "/tmp/php_error.log");
 
         $this->validate($schedule_id, $rec);
 
@@ -133,8 +133,8 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
     {
         $rec['start_time'] = $this->format_time($rec['start_time']);
         $rec['end_time'] = $this->format_time($rec['end_time']);
-        error_log($rec['start_time'] ."  start time \r\n ", 3, "/tmp/php_error.log");
-        error_log($rec['end_time'] ."  end time \r\n ", 3, "/tmp/php_error.log");
+        //error_log($rec['start_time'] ."  start time \r\n ", 3, "/tmp/php_error.log");
+        //error_log($rec['end_time'] ."  end time \r\n ", 3, "/tmp/php_error.log");
 
         $this->validate($schedule_id, $rec, true, $id);
 
@@ -197,13 +197,13 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
 
             if (is_array($resources)) {
                 foreach ($resources as &$r0) {
-                    error_log($r0, 3, "/tmp/php_error.log");
+                    //error_log($r0, 3, "/tmp/php_error.log");
                     $sql = $this->db->prepare("INSERT INTO sub_schedules_resources (sub_schedule_id, resource_id) VALUES (:sub_schedule_id, :resource_id)");
                     if (!$sql->execute(array(
                         ':sub_schedule_id'        => $sub_schedule_id, 
                         ':resource_id'            => $r0
                         )))
-                        error_log('FALSE', 3, "/tmp/php_error.log");
+                        //error_log('FALSE', 3, "/tmp/php_error.log");
                       //return FALSE;        
                 }
             }
