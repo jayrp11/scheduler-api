@@ -203,7 +203,7 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
                         ':sub_schedule_id'        => $sub_schedule_id, 
                         ':resource_id'            => $r0
                         )))
-                        //error_log('FALSE', 3, "/tmp/php_error.log");
+                        error_log('FALSE');
                       //return FALSE;        
                 }
             }
