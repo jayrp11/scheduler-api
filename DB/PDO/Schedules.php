@@ -64,8 +64,8 @@ class DB_PDO_Schedules extends DB_PDO_MySqlCRUD
 
     function insert($rec)
     {
-        $sql = $this->db->prepare("INSERT INTO schedules (theme, s_date) VALUES (:theme, :s_date)");
-        if (!$sql->execute(array(':theme' => $rec['theme'], ':s_date' => $rec['s_date'])))
+        $sql = $this->db->prepare("INSERT INTO schedules (theme, s_date, owner) VALUES (:theme, :s_date, :owner)");
+        if (!$sql->execute(array(':theme' => $rec['theme'], ':s_date' => $rec['s_date'], ':owner' => $_SESSION['user']['id'])))
             return FALSE;
         return $this->get($this->db->lastInsertId());
     }

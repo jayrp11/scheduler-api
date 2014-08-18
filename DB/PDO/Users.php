@@ -43,7 +43,7 @@ class DB_PDO_Users extends DB_PDO_MySqlCRUD
 
             //error_log(session_status()."  Users Session Status \r\n ", 3, "/tmp/php_error.log");
             
-            $sql = $this->getDb()->prepare('SELECT username, authlevel FROM users WHERE username = :username');
+            $sql = $this->getDb()->prepare('SELECT id, username, authlevel FROM users WHERE username = :username');
             $row = $sql->fetch(PDO::FETCH_ASSOC);
             $sql->execute(array(':username' => $rec['username']));
 
