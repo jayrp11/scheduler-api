@@ -119,7 +119,7 @@ class DB_PDO_SubSchedules extends DB_PDO_MySqlCRUD
                 ':title'            => $rec['title'],
                 ':start_time'    => $rec['start_time'],
                 ':end_time'    => $rec['end_time'],
-                ':notes'    => $rec['notes'],
+                ':notes'    => isset($rec['notes']) ? $rec['notes'] : '',
                 ':presenter'    => $rec['presenter'],
                 ':lead'    => $rec['lead'],
                 )))

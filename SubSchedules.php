@@ -34,7 +34,7 @@ class SubSchedules {
 	*
 	* @url GET schedules/{schedule_id}/sub_schedules/{id}
 	*/
-	function get($id) {
+	function get($schedule_id, $id) {
         return $this->dp->get($id);
     }
 
