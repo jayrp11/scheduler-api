@@ -13,8 +13,7 @@ class SubSchedules {
             ['title'],
             ['start_time'],
             ['end_time'],
-            ['presenter'],
-            ['lead']
+            ['presenter']
         ]
     ];
 
